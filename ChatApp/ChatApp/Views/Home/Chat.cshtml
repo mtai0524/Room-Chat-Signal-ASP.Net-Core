@@ -1,67 +1,272 @@
 @model Chat
-
-<div class="chat-body">
-    @foreach(var message in Model.Messages){
-    <div class="message">
-        <header>@message.Name:</header>
-        <p>@message.Text</p>
-        <footer>@message.Timestamp</footer>
-    </div>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
     }
+
+   
+
+    .message {
+        width: 300px;
+        background-color: #7289DA;
+        color: #ffffff;
+        padding: 10px;
+        margin: 10px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        animation: fadeIn 0.5s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        position: relative;
+        align-self: flex-end; /* Align header and footer to the left */
+    }
+
+        .message header
+        {
+            text-align: right;
+            font-weight: bold;
+            margin-bottom: 5px;
+            align-self: flex-end; /* Align header and footer to the left */
+        }
+
+        .message footer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 12px;
+        }
+
+        .message p {
+            margin-top: 5px;
+            white-space: pre-line; /* Cho phép xuống dòng khi có ký tự xuống dòng (\n) trong văn bản */
+            overflow-wrap: break-word; /* Cho phép xuống dòng khi có từ quá dài */
+            max-height: none;
+        }
+
+    .chat-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .chat-header {
+        background-color: #36393F;
+        color: #ffffff;
+        padding: 15px;
+        text-align: center;
+        font-size: 18px;
+    }
+
+    .chat-body {
+        height:1000px;
+        width: 500px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+
+    .chat-input {
+        display: flex;
+        position: relative; /* Add relative positioning to the container */
+    }
+
+        .chat-input input {
+            flex: 9; /* Adjusted to take 90% */
+            padding: 10px;
+            border: 1px solid #99AAB5;
+            border-radius: 5px;
+            max-height: 100px; /* Set a maximum height for the input */
+        }
+
+        .chat-input button {
+            margin-left:5px;
+            flex: 1; /* Adjusted to take 10% */
+            background-color: #7289DA;
+            color: #ffffff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            /* Add some styles for the icon */
+            .chat-input button i {
+                font-size: 18px;
+            }
+
+            .chat-input button:hover {
+                background-color: #677BC4;
+            }
+
+    .message.sent {
+        color: #ffffff;
+        padding: 10px;
+        margin: 10px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        animation: fadeIn 0.5s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        position: relative;
+        align-self: flex-start; /* Align to the right for sent messages */
+        background-color: #4CAF50; /* Adjust color for sent messages */
+    }
+
+        .message.sent header,
+        .message.sent footer {
+            text-align: left;
+            font-weight: bold;
+            align-self: flex-start; /* Align header and footer to the left */
+        }
+
+        .message.sent footer {
+            text-align:right;
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 12px;
+        }
+
+        .message.sent p {
+            white-space: pre-line; /* Cho phép xuống dòng khi có ký tự xuống dòng (\n) trong văn bản */
+            overflow-wrap: break-word; /* Cho phép xuống dòng khi có từ quá dài */
+        }
+
+    .message img {
+        width: 30px; /* Adjust the width as needed */
+        height: 30px; /* Adjust the height as needed */
+        border-radius: 50%; /* Make the avatar circular */
+        margin-right: 10px; /* Add some spacing between avatar and message */
+    }
+</style>
+
+<div class="chat-container">
+    <div class="chat-header">
+        Chat App<br />
+        @Model.Name
+    </div>
+    <div class="chat-body">
+        @foreach (var message in Model.Messages)
+        {
+            var messageClass = (message.Name != User.Identity.Name) ? "sent" : "";
+            <div class="message @messageClass">
+                <!-- Add the avatar if the message is not from the current user -->
+                @if (message.Name != User.Identity.Name)
+                {
+                    <img src="https://res.cloudinary.com/dl3hvap4a/image/upload/v1698144308/zoduszm1z98hhcoghtxo.jpg" alt="Avatar">
+                }
+                @if (message.Name == User.Identity.Name)
+                {
+                    <img src="https://res.cloudinary.com/dl3hvap4a/image/upload/v1697603168/ynsfj7il8y66xkmeyxo8.png" alt="Avatar">
+                }
+                <header>@message.Name:</header>
+                <footer>@message.Timestamp</footer>
+                <p id="content">@message.Text</p>
+            </div>
+        }
+    </div>
+    <form class="chat-input" onsubmit="sendMessage(event)" asp-controller="Home" asp-action="CreateMessage">
+        <input type="hidden" name="roomId" value="@Model.Id">
+        <input type="text" name="message" id="message-input" placeholder="Type your message...">
+        <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+    </form>
 </div>
-<form class="chat-input" onsubmit="sendMessage(event)" asp-controller="Home" asp-action="CreateMessage">
-    <input type="hidden" name="roomId" value="@Model.Id">
-    <input type="text" name="message" id="message-input">
-    <button type="submit">Send</button>
-</form>
 
 @section scripts {
-<script src="~/js/signalr.min.js"></script>
-<script src="~/js/messageBuilder.js"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script>
-    var connection = new signalR.HubConnectionBuilder()
-        .withUrl("/chatHub")
-        .build();
+    <script src="~/js/signalr.min.js"></script>
+    <script src="~/js/messageBuilder.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        window.onload = function () {
+            // Scroll to the bottom of the chat when the page loads
+            var chatBody = document.querySelector('.chat-body');
+            chatBody.scrollTop = chatBody.scrollHeight;
+        };
 
-    var _connectionId = '';
+        function adjustSentMessageHeight() {
+            const sentMessages = document.querySelectorAll('.message.sent');
 
-    connection.on("RecieveMessage", function (data) {
-        var message = messageBuilder()
-            .createMessage()
-            .withHeader(data.name)
-            .withParagraph(data.text)
-            .withFooter(data.timestamp)
+            sentMessages.forEach((message) => {
+                const content = message.querySelector('p');
+                const contentHeight = content.offsetHeight- 10000;
+
+                message.style.height = `${contentHeight + 1000}px`; // Add padding or adjust as needed
+            });
+        }
+        function adjustMessageHeight() {
+            const messages = document.querySelectorAll('.message');
+
+            messages.forEach((message) => {
+                const content = message.querySelector('p');
+                const contentHeight = content.offsetHeight - 100000;
+
+                message.style.height = `${contentHeight + 100}px`; // Add some padding or adjust as needed
+            });
+        }
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
             .build();
 
-        document.querySelector('.chat-body').append(message);
-    })
+        var _connectionId = '';
 
-    connection.start()
-        .then(function () {
-            connection.invoke('joinRoom', '@Model.Id');
-        })
-        .catch(function (err) {
-            console.log(err)
-        })
+        connection.on("RecieveMessage", function (data) {
+            // Determine if the message is from the currently logged-in user
+            var isCurrentUser = data.name === '@User.Identity.Name';
 
-    window.addEventListener('onunload', function () {
-        connection.invoke('leaveRoom', '@Model.Id');
-    })
+            var message = messageBuilder()
+                .createMessage()
+                .withHeader(data.name)
+                .withParagraph(data.text)
+                .withFooter(data.timestamp)
+                .build();
 
-    var sendMessage = function (event) {
-        event.preventDefault();
+            // Add the 'sent' class if the message is not from the current user
+            if (!isCurrentUser) {
+                message.classList.add('sent');
+            }
 
-        var data = new FormData(event.target);
-        document.getElementById('message-input').value = '';
-        axios.post('/Home/SendMessage', data)
-            .then(res => {
-                console.log("Message Sent!")
+            document.querySelector('.chat-body').append(message);
+            adjustMessageHeight();
+            adjustSentMessageHeight();
+
+            // Scroll down when new messages are received
+            var chatBody = document.querySelector('.chat-body');
+            chatBody.scrollTop = chatBody.scrollHeight;
+        });
+
+        connection.start()
+            .then(function () {
+                connection.invoke('joinRoom', '@Model.Id');
             })
-            .catch(err => {
-                console.log("Failed to send message!")
-            })
-    }
+            .catch(function (err) {
+                console.log(err);
+            });
 
-</script>
+        window.addEventListener('unload', function () {
+            connection.invoke('leaveRoom', '@Model.Id');
+        });
+
+        var sendMessage = function (event) {
+            event.preventDefault();
+
+            var data = new FormData(event.target);
+            document.getElementById('message-input').value = '';
+            axios.post('/Home/SendMessage', data)
+                .then(res => {
+                    console.log("Message Sent!");
+                })
+                .catch(err => {
+                    console.log("Failed to send message!");
+                });
+        };
+    </script>
 }
+

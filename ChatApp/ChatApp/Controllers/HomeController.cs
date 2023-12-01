@@ -17,6 +17,7 @@ namespace ChatApp.Controllers
     [Authorize]
     public class HomeController : BaseController
     {
+        private readonly AppDbContext context;
         private IChatRepository _repo;
         public HomeController(IChatRepository repo) => _repo = repo;
         public IActionResult Index()
